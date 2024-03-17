@@ -3,11 +3,21 @@
 // function to compute
 open System
 
+let rec while1 exitCond act cur = 
+    if (exitCond cur) then cur
+    else while1 exitCond act (act cur) 
+
+let power (x: float) (n: int) =
+    let exitCondition (n, _, _) = n < 1
+    let action (n, x, acc) = (n - 1, x, acc * x)
+    let (_, _, res) = while1 exitCondition action (n, x, 1.)
+    res
+
 let builtinCalc x = Math.Log(1.0 + x - 2.0*x*x)
 
 let rec taylor_naive_log (x: float) (n: float) (i: float) (acc: float) (epsilon: float) =
-    let prev = ((-1.)**(i+1.) * 2.**i - 1.) * (x**i) / i
-    let cur = ((-1.)**i * 2.**i - 1.) * (x**(i+1.)) / (i+1.)
+    let prev = ((power(-1.) (int i+1)) * (power (2.) (int i)) - 1.) * ((power (x) (int i))) / i
+    let cur = ((power (-1.) (int i)) * (power (2.) (int i)) - 1.) * (power (x) (int i+1)) / (i+1.)
     if (abs(cur - prev) < epsilon) then
         (acc, i)
     else
@@ -18,7 +28,7 @@ let rec taylor_naive_log (x: float) (n: float) (i: float) (acc: float) (epsilon:
 
 let smartTaylor x =
     let rec loop n acc result =
-        let newAcc = ((-1.0) ** (float (n+1)) * 2.0**float(n) - 1.0) * (x ** float n) / float n
+        let newAcc = ((power (-1.0)  (n+1)) * (power (2.0) (n)) - 1.0) * (power (x) (n)) / float n
         let newResult = acc + newAcc
         if Math.Abs(newAcc) < 0.0001 then newResult, n
         else loop (n+1) newResult newResult
@@ -39,4 +49,3 @@ let main =
         printfn "| %.2f | %.4f | %.4f | %d | %.4f | %0.0f |" xFloat builtinResult smartResult smartTerms taylor_naive_res taylor_naive_iter
 
 main
-
